@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  
+  nginx:
+    image: nginx:stable-alpine
+    container_name: jurni-cms-api-proxy
+    ports:
+      - "8086:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./infra/docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infra/docker/nginx/conf.d:/etc/nginx/conf.d
+
+  php:
+    image: jurnisa/jurni-solution:laravel-base
+    container_name: jurni-cms-api
+    ports:
+      - "9000"
+    volumes: 
+      - ./src:/var/www/html
+    environment: 
+      - DB_HOST=${Database_Host}
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=developer
+      - DB_PASSWORD=developerone
+                
+  composer:
+    image: jurnisa/jurni-solution:laravel-base
+    container_name: jurni-cms-api-composer
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+
+  artisan:
+    image: jurnisa/jurni-solution:laravel-base
+    container_name: jurni-cms-api-artisan
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: ['/var/www/html/artisan']
+
+
+  phpunit:
+    image: jurnisa/jurni-solution:laravel-base
+    container_name: jurni-cms-api-phpunit
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: ['vendor/bin/phpunit']
